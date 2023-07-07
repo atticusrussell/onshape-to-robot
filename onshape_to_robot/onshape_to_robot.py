@@ -6,6 +6,7 @@ import sys
 from sys import exit
 import os
 import hashlib
+import re
 from . import csg
 from .robot_description import RobotURDF, RobotSDF
 
@@ -79,7 +80,8 @@ def main():
         if partIsIgnore(justPart):
             stlFile = None
         else:
-            stlFile = prefix.replace('/', '_')+'.stl'
+            # Use regular expression to replace multiple underscores with a single one
+            stlFile = re.sub('_+', '_', prefix.replace('/', '_'))+'.stl'
             # shorten the configuration to a maximum number of chars to prevent errors. Necessary for standard parts like screws
             if len(part['configuration']) > 40:
                 shortend_configuration = hashlib.md5(
@@ -168,7 +170,8 @@ def main():
         if configuration != 'default' and len(configuration) < 40:
             parts += ['_' + configuration.replace('=', '_').replace(' ', '_')]
 
-        return basePartName, '_'.join(parts).lower()
+        # Use regular expression to replace multiple underscores with a single one
+        return basePartName, re.sub('_+', '_', '_'.join(parts).lower())
 
 
     def processPartName(name, configuration, overrideName=None):
