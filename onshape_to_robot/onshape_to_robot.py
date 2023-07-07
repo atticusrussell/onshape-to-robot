@@ -166,9 +166,13 @@ def main():
         del parts[-1]
         basePartName = '_'.join(parts).lower()
 
-        # only add configuration to name if its not default and not a very long configuration (which happens for library parts like screws)
-        if configuration != 'default' and len(configuration) < 40:
-            parts += ['_' + configuration.replace('=', '_').replace(' ', '_')]
+        # some raw config strings look like "List_E8lNvDhhLuVtnq=Default"
+        if '=' in configuration:
+            configuration=configuration.split('=')[1]
+        if configuration.lower() != 'default': # Case-insensitive comparison
+            # only add configuration to name if its not default and not a very long configuration (which happens for library parts like screws)
+            if len(configuration) < 40:
+                parts += ['_' + configuration.replace('=', '_').replace(' ', '_')]
 
         # Use regular expression to replace multiple underscores with a single one
         return basePartName, re.sub('_+', '_', '_'.join(parts).lower())
