@@ -353,3 +353,20 @@ class Client():
             return self._api.request('get', '/api/parts/d/' + did + '/m/' + mid + '/e/' + eid + '/partid/'+escape_slash(partid)+'/massproperties', query={'configuration': configuration, 'useMassPropertyOverrides': True})
 
         return json.loads(self.cache_get('massproperties', (did, mid, eid, self.hash_partid(partid), configuration), invoke, True))
+
+
+    def get_element_configuration_encodings(self, did, mid, eid, cid):
+        '''
+        Decode configuration string by document id microversion id, and element id
+
+        Args:
+            - did (str): Document ID
+            - mid (str): Microversion ID
+            - eid (str): Element ID
+            - cid (str): Configuration ID
+
+        Returns:
+            - requests.Response: Onshape response data
+        '''
+
+        return self._api.request('get', '/api/elements/d/' + did + '/m/' + mid + '/e/' + eid + '/configurationencodings/' + cid, query={'includeDisplayNames': 'true'})

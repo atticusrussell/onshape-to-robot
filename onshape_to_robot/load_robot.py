@@ -7,6 +7,23 @@ from .onshape_api.client import Client
 from .config import config, configFile
 from colorama import Fore, Back, Style
 
+
+def decodeElementConfiguration(documentId, documentMicroversion, elementId, configuration):
+    # print("\n" + Style.DIM + '* Raw config: "' + configuration +'"' + Style.RESET_ALL)
+    if '=' not in configuration:
+        return configuration
+    
+    reply = client.get_element_configuration_encodings(documentId, documentMicroversion, elementId, configuration)
+    response = reply.json()
+    if len(response['parameters']) == 1:
+        decodedConfig=response['parameters'][0]['parameterValue']
+        # print("\n" + Style.DIM + '* Decoded config: "' + decodedConfig +'"' + Style.RESET_ALL)
+    else:
+        decodedConfig = configuration
+        # print(Fore.RED + "ERROR: Unable to decode configuration" + Style.RESET_ALL)
+    return decodedConfig
+        # exit(1)
+
 # OnShape API client
 workspaceId = None
 client = Client(logging=False, creds=configFile)
@@ -60,6 +77,9 @@ else:
 
 root = assembly['rootAssembly']
 
+for inst in assembly['rootAssembly']['instances']:
+    inst['configuration'] = decodeElementConfiguration(inst['documentId'], inst['documentMicroversion'], inst['elementId'], inst['configuration'])
+
 # Finds a (leaf) instance given the full path, typically A B C where A and B would be subassemblies and C
 # the final part
 
@@ -95,6 +115,8 @@ for occurrence in root['occurrences']:
     occurrence['transform'] = np.matrix(
         np.reshape(occurrence['transform'], (4, 4)))
     occurrence['linkName'] = None
+    if 'instance' in occurrence and 'configuration' in occurrence['instance']:
+        occurrence['instance']['configuration'] = decodeElementConfiguration(occurrence['instance']['documentId'], occurrence['instance']['documentMicroversion'], occurrence['instance']['elementId'], occurrence['instance']['configuration'])
     occurrences[tuple(occurrence['path'])] = occurrence
 
 # Gets an occurrence given its full path
